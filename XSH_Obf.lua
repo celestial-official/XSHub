@@ -38,7 +38,10 @@ local obfuscate = function(source, varName, watermark)
 
 	local sourceChunks = {}
 	for i = 1, #encryptedSource, 10 do
-		table.insert(sourceChunks, encryptedSource:sub(i, i + 9))
+		local chunk = encryptedSource:sub(i, i + 9)
+		if #chunk > 0 then
+			table.insert(sourceChunks, chunk)
+		end
 	end
 
 	if #sourceChunks == 0 then
@@ -47,14 +50,19 @@ local obfuscate = function(source, varName, watermark)
 
 	local randomVarName = varName .. randomString(10)
 	local assembledSource = "local " .. randomVarName .. " = {"
+
 	for _, chunk in ipairs(sourceChunks) do
 		assembledSource = assembledSource .. string.format('"%s", ', chunk)
 	end
 
 	assembledSource = assembledSource:sub(1, -3) .. "}"
 
+	print("Assembled Source:\n", assembledSource)
+
 	local finalCode = controlFlowObfuscate(assembledSource) .. "\n"
 	finalCode = finalCode .. string.format("loadstring(table.concat(%s))()", randomVarName)
+
+	print("Final Code:\n", finalCode)
 
 	setclipboard(finalCode)
 end
