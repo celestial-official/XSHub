@@ -37,9 +37,7 @@ end
 
 local controlFlowObfuscate = function(code)
 	local obfuscated = "if (true) then\n"
-	obfuscated = obfuscated .. code .. "\n"
-	obfuscated = obfuscated .. "end"
-
+	obfuscated = obfuscated .. code .. "\nend"
 	return obfuscated
 end
 
@@ -63,8 +61,8 @@ local obfuscate = function(source, varName, watermark)
 
 	assembledSource = assembledSource .. "}"
 
-	local finalCode = controlFlowObfuscate(assembledSource)
-	finalCode = finalCode .. string.format("\nloadstring(table.concat(%s))()", varName .. randomString(10))
+	local finalCode = controlFlowObfuscate(assembledSource) .. "\n"
+	finalCode = finalCode .. string.format("loadstring(table.concat(%s))()", varName .. randomString(10))
 
 	setclipboard(finalCode)
 end
