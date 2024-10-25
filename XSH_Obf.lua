@@ -24,17 +24,6 @@ local encryptString = function(str)
 	return table.concat(encrypted)
 end
 
-local stringToBinary = function(str)
-	local binaryString = {}
-
-	for i = 1, #str do
-		local byte = str:byte(i)
-		binaryString[i] = string.format("%08b", byte)
-	end
-
-	return table.concat(binaryString, " ")
-end
-
 local controlFlowObfuscate = function(code)
 	local obfuscated = "if (true) then\n"
 	obfuscated = obfuscated .. code .. "\nend"
@@ -45,13 +34,15 @@ local obfuscate = function(source, varName, watermark)
 	varName = varName or "ObfVar_"
 	watermark = watermark or "Celestial"
 
-	local ticks = tick()
-	local watermarkComment = string.format("--[[ %s | Secure by cel.offiii ]]--\n\n", watermark)
 	local encryptedSource = encryptString(source)
 
 	local sourceChunks = {}
 	for i = 1, #encryptedSource, 10 do
 		table.insert(sourceChunks, encryptedSource:sub(i, i + 9))
+	end
+
+	if #sourceChunks == 0 then
+		error("No source chunks generated, check encryption.")
 	end
 
 	local randomVarName = varName .. randomString(10)
@@ -60,7 +51,7 @@ local obfuscate = function(source, varName, watermark)
 		assembledSource = assembledSource .. string.format('"%s", ', chunk)
 	end
 
-	assembledSource = assembledSource .. "}"
+	assembledSource = assembledSource:sub(1, -3) .. "}"
 
 	local finalCode = controlFlowObfuscate(assembledSource) .. "\n"
 	finalCode = finalCode .. string.format("loadstring(table.concat(%s))()", randomVarName)
