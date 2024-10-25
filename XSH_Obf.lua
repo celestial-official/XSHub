@@ -18,7 +18,7 @@ local encryptString = function(str)
 		local char = str:byte(i)
 		local keyChar = key:byte((i - 1) % #key + 1)
 
-		table.insert(encrypted, string.char(bit.bxor(char, keyChar)))
+		table.insert(encrypted, string.char(bit32.bxor(char, keyChar)))
 	end
 
 	return table.concat(encrypted)
@@ -27,7 +27,6 @@ end
 local controlFlowObfuscate = function(code)
 	local obfuscated = "if (true) then\n"
 	obfuscated = obfuscated .. code .. "\nend"
-
 	return obfuscated
 end
 
@@ -55,7 +54,6 @@ local obfuscate = function(source, varName, watermark)
 	assembledSource = assembledSource:sub(1, -3) .. "}"
 
 	local finalCode = controlFlowObfuscate(assembledSource) .. "\n"
-
 	finalCode = finalCode .. string.format("loadstring(table.concat(%s))()", randomVarName)
 
 	setclipboard(finalCode)
