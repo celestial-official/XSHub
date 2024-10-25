@@ -1,13 +1,12 @@
 local randomString = function(length)
-	local chars = "..."
+	local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	local result = ""
 
 	for i = 1, length do
 		local rand = math.random(1, #chars)
-
-		result = result..chars:sub(rand, rand)
+		result = result .. chars:sub(rand, rand)
 	end
-	
+
 	return result
 end
 
@@ -30,7 +29,6 @@ local stringToBinary = function(str)
 
 	for i = 1, #str do
 		local byte = str:byte(i)
-
 		binaryString[i] = string.format("%08b", byte)
 	end
 
@@ -38,20 +36,19 @@ local stringToBinary = function(str)
 end
 
 local controlFlowObfuscate = function(code)
-	local obfuscated = "if true then"
-
-	obfuscated = obfuscated..code
-	obfuscated = obfuscated.." end"
+	local obfuscated = "if (true) then\n"
+	obfuscated = obfuscated .. code .. "\n"
+	obfuscated = obfuscated .. "end"
 
 	return obfuscated
 end
 
-local obfuscate = function(source, varName, watermak)
+local obfuscate = function(source, varName, watermark)
 	varName = varName or "ObfVar_"
-	watermak = watermak or "Celestial"
+	watermark = watermark or "Celestial"
 
 	local ticks = tick()
-	local watermarkComment = string.format("--[[ %s | Secure by cel.offiii ]]--\n\n", watermak)
+	local watermarkComment = string.format("--[[ %s | Secure by cel.offiii ]]--\n\n", watermark)
 	local encryptedSource = encryptString(source)
 
 	local sourceChunks = {}
@@ -59,16 +56,15 @@ local obfuscate = function(source, varName, watermak)
 		table.insert(sourceChunks, encryptedSource:sub(i, i + 9))
 	end
 
-	local assembledSource = "local "..varName..randomString(10).." = {"
+	local assembledSource = "local " .. varName .. randomString(10) .. " = {"
 	for _, chunk in ipairs(sourceChunks) do
-		assembledSource = assembledSource..string.format('"%s", ', chunk)
+		assembledSource = assembledSource .. string.format('"%s", ', chunk)
 	end
 
-	assembledSource = assembledSource.."}"
+	assembledSource = assembledSource .. "}"
 
 	local finalCode = controlFlowObfuscate(assembledSource)
-
-	finalCode = finalCode..string.format("loadstring(table.concat(%s))()", varName..randomString(10))
+	finalCode = finalCode .. string.format("\nloadstring(table.concat(%s))()", varName .. randomString(10))
 
 	setclipboard(finalCode)
 end
